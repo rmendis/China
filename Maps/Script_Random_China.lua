@@ -17,6 +17,10 @@ include "ResourceGenerator"
 include "AssignStartingPlots"
 
 local g_iW, g_iH;
+local g_iFlags = {};
+local g_continentsFrac = nil;
+local g_CenterX, g_CenterY = nil;
+local china = nil;
 
 -------------------------------------------------------------------------------
 function GenerateMap()
@@ -32,7 +36,7 @@ function GenerateMap()
 	end
 	
 	plotTypes = GeneratePlotTypes();
-	terrainTypes = GenerateTerrainTypes(plotTypes, g_iW, g_iH, g_iFlags, false, temperature);
+	terrainTypes = GenerateTerrainTypesChina(plotTypes, g_iW, g_iH, g_iFlags, false, temperature);
 
 	for i = 0, (g_iW * g_iH) - 1, 1 do
 		pPlot = Map.GetPlotByIndex(i);
@@ -378,6 +382,214 @@ function GeneratePlotTypes()
 end
 ------------------------------------------------------------------------------
 
+function InitFractal(args)
+
+	if(args == nil) then args = {}; end
+
+	local continent_grain = args.continent_grain or 2;
+	local rift_grain = args.rift_grain or -1; -- Default no rifts. Set grain to between 1 and 3 to add rifts. - Bob
+	local invert_heights = args.invert_heights or false;
+	local polar = args.polar or true;
+	local ridge_flags = args.ridge_flags or g_iFlags;
+
+	local fracFlags = {};
+	
+	if(invert_heights) then
+		fracFlags.FRAC_INVERT_HEIGHTS = true;
+	end
+	
+	if(polar) then
+		fracFlags.FRAC_POLAR = true;
+	end
+	
+	if(rift_grain > 0 and rift_grain < 4) then
+		local riftsFrac = Fractal.Create(g_iW, g_iH, rift_grain, {}, 6, 5);
+		g_continentsFrac = Fractal.CreateRifts(g_iW, g_iH, continent_grain, fracFlags, riftsFrac, 6, 5);
+	else
+		g_continentsFrac = Fractal.Create(g_iW, g_iH, continent_grain, fracFlags, 6, 5);	
+	end
+
+	-- Use Brian's tectonics method to weave ridgelines in to the continental fractal.
+	-- Without fractal variation, the tectonics come out too regular.
+	--
+	--[[ "The principle of the RidgeBuilder code is a modified Voronoi diagram. I 
+	added some minor randomness and the slope might be a little tricky. It was 
+	intended as a 'whole world' modifier to the fractal class. You can modify 
+	the number of plates, but that is about it." ]]-- Brian Wade - May 23, 2009
+	--
+	local MapSizeTypes = {};
+	for row in GameInfo.Maps() do
+		MapSizeTypes[row.MapSizeType] = row.PlateValue;
+	end
+	local sizekey = Map.GetMapSize();
+
+	local numPlates = MapSizeTypes[sizekey] or 4
+
+	-- Blend a bit of ridge into the fractal.
+	-- This will do things like roughen the coastlines and build inland seas. - Brian
+
+	g_continentsFrac:BuildRidges(numPlates, {}, 1, 2);
+end
+
+------------------------------------------------------------------------------
+function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountains)
+	print("Generating Terrain Types");
+	local terrainTypes = {};
+
+	local fracXExp = -1;
+	local fracYExp = -1;
+	local grain_amount = 3;
+
+	china = Fractal.Create(iW, iH, 
+									grain_amount, iFlags, 
+									fracXExp, fracYExp);
+
+	for iX = 0, iW - 1 do
+		for iY = 0, iH - 1 do
+			local index = (iY * iW) + iX;
+			if (plotTypes[index] == g_PLOT_TYPE_OCEAN) then
+				if (IsAdjacentToLand(plotTypes, iX, iY)) then
+					terrainTypes[index] = g_TERRAIN_TYPE_COAST;
+				else
+					terrainTypes[index] = g_TERRAIN_TYPE_OCEAN;
+				end
+			end
+		end
+	end
+
+	if (bNoCoastalMountains == true) then
+		plotTypes = RemoveCoastalMountains(plotTypes, terrainTypes);
+	end
+
+	g_CenterX = math.floor(g_iW/2);
+	g_CenterY = math.floor(g_iH/2);
+
+	for iX = 0, iW - 1 do
+		for iY = 0, iH - 1 do
+			local index = (iY * iW) + iX;
+
+			local lat = GetLatitudeAtPlot(china, iX, iY);
+			local lon = GetLongitudeAtPlot(china, iX, iY);
+
+			local chinaVal = china:GetHeight(iX, iY);
+
+			-- tundra/plains
+			if (lat <= 0.65 and lat > 0.44 and iY > g_CenterY) then					
+				local iTundraTop = china:GetHeight(100);
+				local iTundraBottom = china:GetHeight((0.5 - iY/iH) * 100);
+								
+				local iPlainsTop = china:GetHeight((0.5 - iY/iH) * 100);
+				local iPlainsBottom = china:GetHeight(5);
+
+				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
+
+					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA_MOUNTAIN;
+					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
+					end
+
+				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_GRASS;
+				
+					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA;
+					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS;
+					end
+				end
+
+			-- desert
+			elseif (lat < 0.76 and lat > 0.25 and iY < g_CenterY and ((lon < 0.1 and iX > g_CenterX) or (lon < 0.6 and iX < g_CenterX))) then
+				local iDistanceFromCenter = Map.GetPlotDistance(iX, iY, g_CenterX, g_CenterY);
+
+				local iDesertTop = china:GetHeight(100);										
+				local iDesertBottom = china:GetHeight(31 + iDistanceFromCenter/iW * 100);	-- more desert in the center
+
+				local iPlainsTop = china:GetHeight(31 + iDistanceFromCenter/iW * 100);
+				local iPlainsBottom = china:GetHeight(31);
+
+				local chinaVal = china:GetHeight(iX, iY);
+
+				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
+
+					if ((chinaVal >= iDesertBottom) and (chinaVal <= iDesertTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
+					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
+					end
+				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_GRASS;
+							
+					if ((chinaVal >= iDesertBottom) and (chinaVal <= iDesertTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_DESERT;
+					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS;
+					end
+				end
+
+			-- China grasslands and plains
+			else
+				local iPlainsTop = china:GetHeight(100);
+				local iPlainsBottom = china:GetHeight(1.2 + iY/iH * 100);
+
+				local iGrassTop = china:GetHeight(1.2 + iY/iH * 100);
+				local iGrassBottom = china:GetHeight(1.2);
+
+				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
+
+					if ((chinaVal >= iGrassBottom) and (chinaVal <= iGrassTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
+					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
+					end
+
+				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_DESERT;
+				
+					if ((chinaVal >= iGrassBottom) and (chinaVal <= iGrassTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_GRASS;
+					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS;
+					end
+				end
+			end
+
+		end
+	end
+
+	local bExpandCoasts = true;
+
+	if bExpandCoasts == false then
+		return
+	end
+
+	print("Expanding coasts");
+	for iI = 0, 2 do
+		local shallowWaterPlots = {};
+		for iX = 0, iW - 1 do
+			for iY = 0, iH - 1 do
+				local index = (iY * iW) + iX;
+				if (terrainTypes[index] == g_TERRAIN_TYPE_OCEAN) then
+					-- Chance for each eligible plot to become an expansion is 1 / iExpansionDiceroll.
+					-- Default is two passes at 1/4 chance per eligible plot on each pass.
+					if (IsAdjacentToShallowWater(terrainTypes, iX, iY) and TerrainBuilder.GetRandomNumber(4, "add shallows") == 0) then
+						table.insert(shallowWaterPlots, index);
+					end
+				end
+			end
+		end
+		for i, index in ipairs(shallowWaterPlots) do
+			terrainTypes[index] = g_TERRAIN_TYPE_COAST;
+		end
+	end
+	
+	return terrainTypes; 
+end
+
 ------------------------------------------------------------------------------
 function GetRiverValueAtPlot(plot)
 
@@ -678,64 +890,21 @@ function AddFeatures()
 end
 ------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
-function AssignStartingPlots:CanPlaceCityStateAt(x, y, area_ID, force_it, ignore_collisions)
-	-- Overriding default city state placement to prevent city states from being placed too close to map edges.
-	local iW, iH = Map.GetGridSize();
-	local plot = Map.GetPlot(x, y)
-	local area = plot:GetArea()
+
+-------------------------------------------------------------------------------------------
+-- LONGITUDE LOOKUP
+----------------------------------------------------------------------------------
+function GetLongitudeAtPlot(variationFrac, iX, iY)
+
+	local g_iW, g_iH = Map.GetGridSize();
+
+	-- Returns a longitude value between 0.0 and 1.0.
+	local lon = math.abs((g_iW / 2) - iX) / (g_iW / 2);
 	
-	-- Adding this check for China
-	if x < 1 or x >= iW - 1 or y < 1 or y >= iH - 1 then
-		return false
-	end
-	--
+	-- Adjust longitude using variation fractal, to roughen the border between bands:
+	lon = lon + (128 - variationFrac:GetHeight(iX, iY))/(255.0 * 5.0);
+	-- Limit to the range [0, 1]:
+	lon = math.clamp(lon, 0, 1);
 	
-	if area ~= area_ID and area_ID ~= -1 then
-		return false
-	end
-	local plotType = plot:GetPlotType()
-	if plotType == g_PLOT_TYPE_OCEAN or plotType == g_PLOT_TYPE_MOUNTAIN then
-		return false
-	end
-	local terrainType = plot:GetTerrainType()
-	if terrainType == TerrainTypes.g_TERRAIN_TYPE_SNOW then
-		return false
-	end
-	local plotIndex = y * iW + x + 1;
-	if self.cityStateData[plotIndex] > 0 and force_it == false then
-		return false
-	end
-	local plotIndex = y * iW + x + 1;
-	if self.playerCollisionData[plotIndex] == true and ignore_collisions == false then
-		return false
-	end
-	return true
+	return lon;
 end
-------------------------------------------------------------------------------
-
-------------------------------------------------------------------------------
-function StartPlotSystem()
-	print("Creating start plot database.");
-	local start_plot_database = AssignStartingPlots.Create()
-	
-	print("Dividing the map in to Regions.");
-	-- Regional Division Method 1: Biggest Landmass
-	local args = {
-		method = 1,
-		};
-	start_plot_database:GenerateRegions(args)
-
-	print("Choosing start locations for civilizations.");
-	start_plot_database:ChooseLocations()
-	
-	print("Normalizing start locations and assigning them to Players.");
-	start_plot_database:BalanceAndAssign()
-
-	print("No Natural Wonders available on this script.");
-	--start_plot_database:PlaceNaturalWonders()
-
-	print("Placing Resources and City States.");
-	start_plot_database:PlaceResourcesAndCityStates()
-end
-------------------------------------------------------------------------------
