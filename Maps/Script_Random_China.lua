@@ -68,10 +68,6 @@ function GenerateMap()
 	TerrainBuilder.AnalyzeChokepoints();
 	TerrainBuilder.StampContinents();
 	
-	--for i = 0, (g_iW * g_iH) - 1, 1 do
-		--pPlot = Map.GetPlotByIndex(i);
-		--print ("i: plotType, terrainType, featureType: " .. tostring(i) .. ": " .. tostring(plotTypes[i]) .. ", " .. tostring(terrainTypes[i]) .. ", " .. tostring(pPlot:GetFeatureType(i)));
-	--end
 	local resourcesConfig = MapConfiguration.GetValue("resources");
 	local startconfig = MapConfiguration.GetValue("start"); -- Get the start config
 	local args = {
@@ -380,109 +376,6 @@ function GeneratePlotTypes()
 	end
 
 	return plotTypes;
-end
-------------------------------------------------------------------------------
-
-------------------------------------------------------------------------------
--- China uses a custom terrain generation.
-------------------------------------------------------------------------------
-function GenerateTerrain()
-	print("Generating Terrain (Lua China) ...");
-	local iW, iH = Map.GetGridSize();
-	local terrainTypes = {};
-	local terrainDesert	= g_TERRAIN_TYPE_DESERT;
-	local terrainPlains	= g_TERRAIN_TYPE_PLAINS;
-	local terrainGrass	= g_TERRAIN_TYPE_GRASS;	
-
-	-- Initiate terrain table, fill all land slots with type TERRAIN_GRASS
-	table.fill(terrainTypes, terrainGrass, iW * iH);
-	for y = 0, iH - 1 do
-		for x = 0, iW - 1 do
-			local plot = Map.GetPlot(x, y)
-			if plot:IsWater() then
-				local i = y * iW + x; -- C++ Plot indices, starting at 0.
-				terrainTypes[i] = plot:GetTerrainType();
-			end
-		end
-	end
-
-	-- Set up fractals and thresholds
-	local plains_check = Fractal.Create(iW, iH, 5, {}, 6, 6);
-	local desert_check = Fractal.Create(iW, iH, 4, {}, 6, 6);
-	local iHunan = plains_check:GetHeight(65)
-	local iDesert = desert_check:GetHeight(30)
-	local iDesertPlains = plains_check:GetHeight(15)
-	local iTibet = plains_check:GetHeight(25)
-	local iNW = plains_check:GetHeight(35)
-
-	-- Main loop
-	for y = 0, iH - 1 do
-		for x = 0, iW - 1 do
-			local i = y * iW + x + 1;
-			local plot = Map.GetPlot(x, y)
-			if plot:IsWater() then
-				terrainTypes[i - 1] = plot:GetTerrainType();
-			else
-				local plainsVal = plains_check:GetHeight(x,y);
-				local inSichuan = false;
-				local inDesert = false;
-				local inArid = false;
-				local inTibet = false;
-				for memberPlot, plotIndex in ipairs(sichuan) do
-					if i == plotIndex then
-						inSichuan = true;
-						break
-					end
-				end
-				for memberPlot, plotIndex in ipairs(desert) do
-					if i == plotIndex then
-						inDesert = true;
-						break
-					end
-				end
-				for memberPlot, plotIndex in ipairs(arid_northwest) do
-					if i == plotIndex then
-						inArid = true;
-						break
-					end
-				end
-				for memberPlot, plotIndex in ipairs(tibetan_plateau) do
-					if i == plotIndex then
-						inTibet= true;
-						break
-					end
-				end
-				if inSichuan then
-					if plainsVal >= iHunan then
-						terrainTypes[i - 1] = terrainPlains;
-					end
-				elseif inDesert then
-					if plainsVal >= iDesertPlains then
-						local desertVal = desert_check:GetHeight(x,y);
-						if desertVal >= iDesert then
-							terrainTypes[i - 1] = terrainDesert;
-						else
-							terrainTypes[i - 1] = terrainPlains;
-						end
-					end
-				elseif inArid then
-					if plainsVal >= iNW then
-						terrainTypes[i - 1] = terrainPlains;
-					end
-				elseif inTibet then
-					if plainsVal >= iTibet then
-						terrainTypes[i - 1] = terrainPlains;
-					end
-				elseif x >= iW * 0.57 and x <= iW * 0.75 and y >= iH * 0.31 and y<= iH * 0.47 then
-					if plainsVal >= iHunan then
-						terrainTypes[i - 1] = terrainPlains;
-					end
-				end
-			end
-		end
-	end
-
-	return terrainTypes;
 end
 ------------------------------------------------------------------------------
 
