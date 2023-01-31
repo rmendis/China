@@ -473,13 +473,33 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 
 			local chinaVal = china:GetHeight(iX, iY);
 
-			-- tundra/plains
-			if (lat <= 0.65 and lat > 0.44 and iY > g_CenterY) then					
+			-- northern china
+			if (lat > 0.55 and iY > g_CenterY) then
+				local iSnowTop = china:GetHeight(100);
+				local iSnowBottom = china:GetHeight((0.5 - iY/iH) * 100);
+
+				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA_MOUNTAIN;
+
+					if ((chinaVal >= iSnowBottom) and (chinaVal <= iSnowTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_SNOW_MOUNTAIN;
+					end
+
+				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA;
+				
+					if ((chinaVal >= iSnowBottom) and (chinaVal <= iSnowTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_SNOW;
+					end
+				end
+
+			-- plains
+			elseif (lat <= 0.55 and lat > 0.44 and iY > g_CenterY) then					
 				local iTundraTop = china:GetHeight(100);
-				local iTundraBottom = china:GetHeight((0.5 - iY/iH) * 100);
+				local iTundraBottom = china:GetHeight(97);
 								
-				local iPlainsTop = china:GetHeight((0.5 - iY/iH) * 100);
-				local iPlainsBottom = china:GetHeight(5);
+				local iPlainsTop = china:GetHeight(97);
+				local iPlainsBottom = china:GetHeight((0.5 - iY/iH) * 100);
 
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
 					terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
@@ -500,7 +520,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 					end
 				end
 
-			-- desert
+			-- Taklamakan & Gobi desert
 			elseif (lat < 0.76 and lat > 0.25 and iY < g_CenterY and ((lon < 0.1 and iX > g_CenterX) or (lon < 0.6 and iX < g_CenterX))) then
 				local iDistanceFromCenter = Map.GetPlotDistance(iX, iY, g_CenterX, g_CenterY);
 
@@ -530,7 +550,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 					end
 				end
 
-			-- China grasslands and plains
+			-- China grasslands
 			else
 				local iPlainsTop = china:GetHeight(100);
 				local iPlainsBottom = china:GetHeight(1.2 + iY/iH * 100);
@@ -868,12 +888,23 @@ end
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
--- China uses a custom feature generation.
+-- China uses a custom feature generation. 20 - 50 deg.
 ------------------------------------------------------------------------------
-function FeatureGenerator:GetLatitudeAtPlot(iX, iY)
-	local lat = 0.45 * (iY / self.iGridH);
-	return lat
+function GetLatitudeAtPlot(variationFrac, iX, iY)
+	local g_iW, g_iH = Map.GetGridSize();
+
+	-- Terrain bands are governed by latitude.
+	-- Returns a latitude value between 0.0 (tropical) and 1.0 (polar).
+	local lat = 0.33 * (iY / g_iH) + 0.22;
+	
+	-- Adjust latitude using variation fractal, to roughen the border between bands:
+	lat = lat + (128 - variationFrac:GetHeight(iX, iY))/(255.0 * 5.0);
+	-- Limit to the range [0, 1]:
+	lat = math.clamp(lat, 0, 1);
+	
+	return lat;
 end
+
 ------------------------------------------------------------------------------
 function FeatureGenerator:AddIceAtPlot(plot, iX, iY, lat)
 	return
