@@ -161,7 +161,7 @@ function GeneratePlotTypes()
 			x = x + slope;
 			local iX = math.floor(x);
 			for loop_x = iX, iW - 1 do
-				local i = y * iW + loop_x + 1;
+				local i = y * iW + loop_x;
 				plotTypes[i] = g_PLOT_TYPE_OCEAN;
 			end
 		end
@@ -190,7 +190,7 @@ function GeneratePlotTypes()
 			y = y + slope;
 			local iY = math.floor(y);
 			for loop_y = 0, iY do
-				local i = loop_y * iW + x + 1;
+				local i = loop_y * iW + x;
 				plotTypes[i] = g_PLOT_TYPE_OCEAN;
 				print("c", i);
 			end
@@ -213,7 +213,7 @@ function GeneratePlotTypes()
 			local d = deltaXSquared/majorAxisSquared + deltaYSquared/minorAxisSquared;
 			if d <= 1 then
 				if y <= iH - 1 then
-					local i = y * iW + x + 1;
+					local i = y * iW + x;
 					plotTypes[i] = g_PLOT_TYPE_LAND;
 				end
 			end
