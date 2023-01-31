@@ -496,9 +496,9 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 			-- plains
 			elseif (lat <= 0.55 and lat > 0.44 and iY > g_CenterY) then					
 				local iTundraTop = china:GetHeight(100);
-				local iTundraBottom = china:GetHeight(97);
+				local iTundraBottom = china:GetHeight(95);
 								
-				local iPlainsTop = china:GetHeight(97);
+				local iPlainsTop = china:GetHeight(95);
 				local iPlainsBottom = china:GetHeight((0.5 - iY/iH) * 100);
 
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
@@ -553,10 +553,10 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 			-- China grasslands
 			else
 				local iPlainsTop = china:GetHeight(100);
-				local iPlainsBottom = china:GetHeight(1.2 + iY/iH * 100);
+				local iPlainsBottom = china:GetHeight(44);
 
-				local iGrassTop = china:GetHeight(1.2 + iY/iH * 100);
-				local iGrassBottom = china:GetHeight(1.2);
+				local iGrassTop = china:GetHeight(44);
+				local iGrassBottom = china:GetHeight(25);
 
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
 					terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
