@@ -2,12 +2,12 @@
 <Project ToolsVersion="12.0" DefaultTargets="Default" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Default</Configuration>
-    <Name>Map of China</Name>
+    <Name>Scrambled China</Name>
     <Guid>feb3116e-ee24-4dda-9837-c7c2fc3008b2</Guid>
     <ProjectGuid>2f7766eb-6076-4e1b-9e95-71ba5612e648</ProjectGuid>
     <ModVersion>1</ModVersion>
-    <Teaser>Port of Civ V's China map from the Scrambled Nations Map Pack.</Teaser>
-    <Description>Port of Civ V's China map from the Scrambled Nations Map Pack.</Description>
+    <Teaser>An internally randomized map of China</Teaser>
+    <Description>Port of Civ V's China map from the Scrambled Nations Map Pack in 5 (custom) map sizes from Duel to Huge.</Description>
     <Authors>blkbutterfly74</Authors>
     <SpecialThanks>Bob Thomas</SpecialThanks>
     <AffectsSavedGames>true</AffectsSavedGames>
