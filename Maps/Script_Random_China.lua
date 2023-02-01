@@ -473,13 +473,13 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 
 			local chinaVal = china:GetHeight(iX, iY);
 
-			-- 8% snow
+			-- 5% snow
 			local iSnowTop = china:GetHeight(100);	
-			local iSnowBottom = china:GetHeight(92);
+			local iSnowBottom = china:GetHeight(95);
 				
 			-- 2% tundra							
 			local iTundraTop = iSnowBottom;										
-			local iTundraBottom = china:GetHeight(90);
+			local iTundraBottom = china:GetHeight(93);
 
 			local iPlainsTop = iTundraBottom;
 			local iPlainsBottom = china:GetHeight(67);
