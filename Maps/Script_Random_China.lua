@@ -473,75 +473,91 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 
 			local chinaVal = china:GetHeight(iX, iY);
 
+			-- 8% snow
+			local iSnowTop = china:GetHeight(100);	
+			local iSnowBottom = china:GetHeight(92);
+				
+			-- 2% tundra							
+			local iTundraTop = iSnowBottom;										
+			local iTundraBottom = china:GetHeight(90);
+
+			local iPlainsTop = iTundraBottom;
+			local iPlainsBottom = china:GetHeight(67);
+
+			local iGrassTop = iPlainsBottom;
+			local iGrassBottom = china:GetHeight(30);
+
+			-- 30% desert
+			local iDesertTop = iGrassBottom;
+			local iDesertBottom = china:GetHeight(0);
+
 			-- northern china
 			if (lat > 0.54) then
-				local iSnowTop = china:GetHeight(100);
-				local iSnowBottom = china:GetHeight((0.5 - iY/iH) * 100);
+				iTundraTop = china:GetHeight(45);
+				iTundraBottom = china:GetHeight(0);
 
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA_MOUNTAIN;
+					terrainTypes[index] = g_TERRAIN_TYPE_SNOW_MOUNTAIN;
 
-					if ((chinaVal >= iSnowBottom) and (chinaVal <= iSnowTop)) then
-						terrainTypes[index] = g_TERRAIN_TYPE_SNOW_MOUNTAIN;
+					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA_MOUNTAIN;
 					end
-
 				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA;
-				
-					if ((chinaVal >= iSnowBottom) and (chinaVal <= iSnowTop)) then
-						terrainTypes[index] = g_TERRAIN_TYPE_SNOW;
+					terrainTypes[index] = g_TERRAIN_TYPE_SNOW;
+
+					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA;
 					end
 				end
 
 			-- Taklamakan & Gobi desert
 			elseif (lat < 0.54 and lat >= 0.40 and lon < 0.8) then
-				local iDesertTop = china:GetHeight(100);										
-				local iDesertBottom = china:GetHeight(10);
+				iGrassTop = china:GetHeight(100);
+				iGrassBottom = china:GetHeight(97);
+				
+				iPlainsTop = iGrassBottom;
+				iPlainsBottom = china:GetHeight(90);
 
-				local iPlainsTop = china:GetHeight(10);
-				local iPlainsBottom = china:GetHeight(5);
-
-				local chinaVal = china:GetHeight(iX, iY);
+				iDesertTop = iPlainsBottom;
+				iDesertBottom = china:GetHeight(0);
 
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
-
 					if ((chinaVal >= iDesertBottom) and (chinaVal <= iDesertTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
 					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
+					elseif ((chinaVal >= iGrassBottom) and (chinaVal <= iGrassTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
 					end
-				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_GRASS;
-							
+				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then			
 					if ((chinaVal >= iDesertBottom) and (chinaVal <= iDesertTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_DESERT;
 					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS;
+					elseif ((chinaVal >= iGrassBottom) and (chinaVal <= iGrassTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_GRASS;
 					end
 				end
 
 			-- plains
 			elseif (lat <= 0.40 and lat > 0.27) then					
-				local iTundraTop = china:GetHeight(100);
-				local iTundraBottom = china:GetHeight(97);
-								
-				local iPlainsTop = china:GetHeight(97);
-				local iPlainsBottom = china:GetHeight((iY/iH - 0.5) * 100);
-
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
+					terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
 
-					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
+					if ((chinaVal >= iSnowBottom) and (chinaVal <= iSnowTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_SNOW_MOUNTAIN;
+					elseif ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA_MOUNTAIN;
 					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
 					end
 
 				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_DESERT;
+					terrainTypes[index] = g_TERRAIN_TYPE_GRASS;
 				
-					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
+					if ((chinaVal >= iSnowBottom) and (chinaVal <= iSnowTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_SNOW;
+					elseif ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA;
 					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS;
@@ -550,32 +566,25 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 
 			-- China grasslands
 			else
-				local iPlainsTop = china:GetHeight(100);
-				local iPlainsBottom = china:GetHeight(85);
-
-				local iGrassTop = china:GetHeight(85);
-				local iGrassBottom = china:GetHeight(05);
-
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
+					terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
 
-					if ((chinaVal >= iGrassBottom) and (chinaVal <= iGrassTop)) then
-						terrainTypes[index] = g_TERRAIN_TYPE_GRASS_MOUNTAIN;
-					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+					if ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
+					elseif ((chinaVal >= iDesertBottom) and (chinaVal <= iDesertTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
 					end
 
 				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_DESERT;
+					terrainTypes[index] = g_TERRAIN_TYPE_GRASS;
 				
-					if ((chinaVal >= iGrassBottom) and (chinaVal <= iGrassTop)) then
-						terrainTypes[index] = g_TERRAIN_TYPE_GRASS;
-					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+					if ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
 						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS;
+					elseif ((chinaVal >= iDesertBottom) and (chinaVal <= iDesertTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_DESERT;
 					end
 				end
 			end
-
 		end
 	end
 
