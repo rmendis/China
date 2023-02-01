@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- China_Text -->
+<!-- Author: blkbutterfly74 -->
+<!-- DateCreated: 2/1/2023 2:46:02 AM -->
+<GameData>
+	<FrontEndText>
+
+		<!-- Texts for Maps -->
+		<Row Tag="LOC_MAP_CHINA_NAME">
+			<Text>Scrambled China</Text>
+		</Row>
+		<Row Tag="LOC_MAP_CHINA_DESCRIPTION">
+			<Text>An internally randomized map of China.</Text>
+		</Row>
+
+	</FrontEndText>
+</GameData>

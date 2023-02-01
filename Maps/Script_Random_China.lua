@@ -963,6 +963,40 @@ function FeatureGenerator:AddForestsAtPlot(plot, iX, iY)
 end
 
 ------------------------------------------------------------------------------
+function FeatureGenerator:AddReefAtPlot(plot, iX, iY)
+	--Reef Check. First see if it can place the feature.
+	local lat = GetLatitudeAtPlot(china, iX, iY);
+
+	if(TerrainBuilder.CanHaveFeature(plot, g_FEATURE_REEF) and lat < self.iceLat * 0.9) then
+		self.iNumReefablePlots = self.iNumReefablePlots + 1;
+		if(math.ceil(self.iReefCount * 100 / self.iNumReefablePlots) <= self.iReefMaxPercent) then
+				local iEquator = 0;
+
+				--Weight based on adjacent plots
+				local iScore  = 3 * math.abs(iY - iEquator);
+				local iAdjacent = TerrainBuilder.GetAdjacentFeatureCount(plot, g_FEATURE_REEF);
+
+				if(iAdjacent == 0 ) then
+					iScore = iScore + 100;
+				elseif(iAdjacent == 1) then
+					iScore = iScore + 125;
+				elseif (iAdjacent == 2) then
+					iScore = iScore  + 150;
+				elseif (iAdjacent == 3 or iAdjacent == 4) then
+					iScore = iScore + 175;
+				else
+					iScore = iScore + 10000;
+				end
+
+				if(TerrainBuilder.GetRandomNumber(200, "Resource Placement Score Adjust") >= iScore) then
+					TerrainBuilder.SetFeatureType(plot, g_FEATURE_REEF);
+					self.iReefCount = self.iReefCount + 1;
+				end
+		end
+	end
+end
+
+------------------------------------------------------------------------------
 -- China uses a custom feature generation. 20 - 50 deg.
 ------------------------------------------------------------------------------
 function GetLatitudeAtPlot(variationFrac, iX, iY)
@@ -992,7 +1026,7 @@ function AddFeatures()
 	-- Get Rainfall setting input by user.
 	local rainfall = MapConfiguration.GetValue("rainfall");
 	
-	local args = {rainfall = rainfall, iJunglePercent = 20, iMarshPercent = 11, iForestPercent = 44, iReefPercent = 10}	-- jungle & marsh max coverage
+	local args = {rainfall = rainfall, iJunglePercent = 20, iMarshPercent = 11, iForestPercent = 44, iReefPercent = 15}	-- jungle & marsh max coverage
 	local featuregen = FeatureGenerator.Create(args);
 
 	featuregen:AddFeatures();
@@ -1007,8 +1041,9 @@ function GetLongitudeAtPlot(variationFrac, iX, iY)
 
 	local g_iW, g_iH = Map.GetGridSize();
 
+	-- china is 80 to 130 deg
 	-- Returns a longitude value between 0.0 and 1.0.
-	local lon = math.abs((g_iW / 2) - iX) / (g_iW / 2);
+	local lon = 0.55 * (iX / g_iW) + 0.88;
 	
 	-- Adjust longitude using variation fractal, to roughen the border between bands:
 	lon = lon + (128 - variationFrac:GetHeight(iX, iY))/(255.0 * 5.0);
