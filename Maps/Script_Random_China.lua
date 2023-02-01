@@ -474,7 +474,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 			local chinaVal = china:GetHeight(iX, iY);
 
 			-- northern china
-			if (lat > 0.55) then
+			if (lat > 0.54) then
 				local iSnowTop = china:GetHeight(100);
 				local iSnowBottom = china:GetHeight((0.5 - iY/iH) * 100);
 
@@ -494,7 +494,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 				end
 
 			-- plains
-			elseif (lat <= 0.55 and lat > 0.48) then					
+			elseif (lat <= 0.54 and lat > 0.48) then					
 				local iTundraTop = china:GetHeight(100);
 				local iTundraBottom = china:GetHeight(90);
 								
@@ -523,10 +523,10 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 			-- Taklamakan & Gobi desert
 			elseif (lat < 0.48 and lat >= 0.33 and lon < 0.8) then
 				local iDesertTop = china:GetHeight(100);										
-				local iDesertBottom = china:GetHeight(55);
+				local iDesertBottom = china:GetHeight(25);
 
-				local iPlainsTop = china:GetHeight(55);
-				local iPlainsBottom = china:GetHeight(31);
+				local iPlainsTop = china:GetHeight(25);
+				local iPlainsBottom = china:GetHeight(10);
 
 				local chinaVal = china:GetHeight(iX, iY);
 
