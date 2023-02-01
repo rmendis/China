@@ -5,7 +5,7 @@
 
 INSERT INTO Maps (File, Domain, Name, Description)
 VALUES 
-	('{FEB3116E-EE24-4DDA-9837-C7C2FC3008B2}Maps/Script_Random_China.lua', 'StandardMaps', 'LOC_MAP_CHINA_NAME', 'LOC_MAP_NORTH_CHINA_DESCRIPTION');
+	('{FEB3116E-EE24-4DDA-9837-C7C2FC3008B2}Maps/Script_Random_China.lua', 'StandardMaps', 'LOC_MAP_CHINA_NAME', 'LOC_MAP_CHINA_DESCRIPTION');
 
 INSERT INTO Parameters (Key1, Key2, ParameterId, Name, Description, Domain, DefaultValue, ConfigurationGroup, ConfigurationId, GroupId, SortIndex)
 VALUES
