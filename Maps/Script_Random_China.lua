@@ -50,13 +50,13 @@ function GenerateMap()
 	AreaBuilder.Recalculate();
 	local biggest_area = Areas.FindBiggestArea(false);
 	print("After Adding Hills: ", biggest_area:GetPlotCount());
-
-	-- River generation is affected by plot types, originating from highlands and preferring to traverse lowlands.
-	AddRivers();
 	
 	-- Lakes would interfere with rivers, causing them to stop and not reach the ocean, if placed any sooner.
 	local numLargeLakes = GameInfo.Maps[Map.GetMapSize()].Continents
 	AddLakes(numLargeLakes);
+
+	-- River generation is affected by plot types, originating from highlands and preferring to traverse lowlands.
+	AddRivers();
 
 	AddFeatures();
 	
@@ -521,13 +521,13 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 				end
 
 			-- Taklamakan & Gobi desert
-			elseif (lat < 0.76 and lat > 0.25 and ((lon < 0.1 and iX > g_CenterX) or (lon < 0.6 and iX < g_CenterX))) then
+			elseif (lat < 0.48 and lon < 0.8) then
 				local iDistanceFromCenter = Map.GetPlotDistance(iX, iY, g_CenterX, g_CenterY);
 
 				local iDesertTop = china:GetHeight(100);										
-				local iDesertBottom = china:GetHeight(31 + iDistanceFromCenter/iW * 100);	-- more desert in the center
+				local iDesertBottom = china:GetHeight(55);
 
-				local iPlainsTop = china:GetHeight(31 + iDistanceFromCenter/iW * 100);
+				local iPlainsTop = china:GetHeight(55);
 				local iPlainsBottom = china:GetHeight(31);
 
 				local chinaVal = china:GetHeight(iX, iY);
@@ -556,7 +556,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 				local iPlainsBottom = china:GetHeight(44);
 
 				local iGrassTop = china:GetHeight(44);
-				local iGrassBottom = china:GetHeight(25);
+				local iGrassBottom = china:GetHeight(05);
 
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
 					terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
@@ -1026,7 +1026,7 @@ function AddFeatures()
 	-- Get Rainfall setting input by user.
 	local rainfall = MapConfiguration.GetValue("rainfall");
 	
-	local args = {rainfall = rainfall, iJunglePercent = 20, iMarshPercent = 11, iForestPercent = 44, iReefPercent = 15}	-- jungle & marsh max coverage
+	local args = {rainfall = rainfall, iJunglePercent = 25, iMarshPercent = 15, iForestPercent = 40, iReefPercent = 15}	-- jungle & marsh max coverage
 	local featuregen = FeatureGenerator.Create(args);
 
 	featuregen:AddFeatures();
