@@ -34,8 +34,22 @@ function GenerateMap()
 	if temperature == 4 then
 		temperature  =  1 + TerrainBuilder.GetRandomNumber(3, "Random Temperature- Lua");
 	end
+
+	--	local world_age
+	local world_age_new = 5;
+	local world_age_normal = 3;
+	local world_age_old = 2;
+
+	local world_age = MapConfiguration.GetValue("world_age");
+	if (world_age == 1) then
+		world_age = world_age_new;
+	elseif (world_age == 3) then
+		world_age = world_age_old;
+	else
+		world_age = world_age_normal;	-- default
+	end
 	
-	plotTypes = GeneratePlotTypes();
+	plotTypes = GeneratePlotTypes(world_age);
 	terrainTypes = GenerateTerrainTypesChina(plotTypes, g_iW, g_iH, g_iFlags, false, temperature);
 
 	for i = 0, (g_iW * g_iH) - 1, 1 do
@@ -377,6 +391,16 @@ function GeneratePlotTypes()
 			end
 		end
 	end
+
+	local args = {};
+	args.world_age = world_age;
+	args.iW = g_iW;
+	args.iH = g_iH
+	args.iFlags = g_iFlags;
+	args.blendRidge = 10;
+	args.blendFract = 1;
+	args.extra_mountains = 4;
+	plotTypes = ApplyTectonics(args, plotTypes);
 
 	return plotTypes;
 end
