@@ -493,39 +493,12 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 					end
 				end
 
-			-- plains
-			elseif (lat <= 0.54 and lat > 0.48) then					
-				local iTundraTop = china:GetHeight(100);
-				local iTundraBottom = china:GetHeight(85);
-								
-				local iPlainsTop = china:GetHeight(85);
-				local iPlainsBottom = china:GetHeight((iY/iH - 0.5) * 100);
-
-				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
-
-					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
-						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA_MOUNTAIN;
-					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
-						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
-					end
-
-				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
-					terrainTypes[index] = g_TERRAIN_TYPE_DESERT;
-				
-					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
-						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA;
-					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
-						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS;
-					end
-				end
-
 			-- Taklamakan & Gobi desert
-			elseif (lat < 0.48 and lat >= 0.25 and lon < 0.8) then
+			elseif (lat < 0.54 and lat >= 0.40 and lon < 0.8) then
 				local iDesertTop = china:GetHeight(100);										
-				local iDesertBottom = china:GetHeight(15);
+				local iDesertBottom = china:GetHeight(10);
 
-				local iPlainsTop = china:GetHeight(15);
+				local iPlainsTop = china:GetHeight(10);
 				local iPlainsBottom = china:GetHeight(5);
 
 				local chinaVal = china:GetHeight(iX, iY);
@@ -548,12 +521,39 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 					end
 				end
 
+			-- plains
+			elseif (lat <= 0.40 and lat > 0.27) then					
+				local iTundraTop = china:GetHeight(100);
+				local iTundraBottom = china:GetHeight(97);
+								
+				local iPlainsTop = china:GetHeight(97);
+				local iPlainsBottom = china:GetHeight((iY/iH - 0.5) * 100);
+
+				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_DESERT_MOUNTAIN;
+
+					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA_MOUNTAIN;
+					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
+					end
+
+				elseif (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
+					terrainTypes[index] = g_TERRAIN_TYPE_DESERT;
+				
+					if ((chinaVal >= iTundraBottom) and (chinaVal <= iTundraTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_TUNDRA;
+					elseif ((chinaVal >= iPlainsBottom) and (chinaVal <= iPlainsTop)) then
+						terrainTypes[index] = g_TERRAIN_TYPE_PLAINS;
+					end
+				end
+
 			-- China grasslands
 			else
 				local iPlainsTop = china:GetHeight(100);
-				local iPlainsBottom = china:GetHeight(44);
+				local iPlainsBottom = china:GetHeight(85);
 
-				local iGrassTop = china:GetHeight(44);
+				local iGrassTop = china:GetHeight(85);
 				local iGrassBottom = china:GetHeight(05);
 
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
