@@ -474,7 +474,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 			local chinaVal = china:GetHeight(iX, iY);
 
 			-- northern china
-			if (lat > 0.55 and iY > g_CenterY) then
+			if (lat > 0.55) then
 				local iSnowTop = china:GetHeight(100);
 				local iSnowBottom = china:GetHeight((0.5 - iY/iH) * 100);
 
@@ -494,9 +494,9 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 				end
 
 			-- plains
-			elseif (lat <= 0.55 and lat > 0.48 and iY > g_CenterY) then					
+			elseif (lat <= 0.55 and lat > 0.48) then					
 				local iTundraTop = china:GetHeight(100);
-				local iTundraBottom = china:GetHeight(95);
+				local iTundraBottom = china:GetHeight(90);
 								
 				local iPlainsTop = china:GetHeight(95);
 				local iPlainsBottom = china:GetHeight((0.5 - iY/iH) * 100);
@@ -521,7 +521,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 				end
 
 			-- Taklamakan & Gobi desert
-			elseif (lat < 0.76 and lat > 0.25 and iY < g_CenterY and ((lon < 0.1 and iX > g_CenterX) or (lon < 0.6 and iX < g_CenterX))) then
+			elseif (lat < 0.76 and lat > 0.25 and ((lon < 0.1 and iX > g_CenterX) or (lon < 0.6 and iX < g_CenterX))) then
 				local iDistanceFromCenter = Map.GetPlotDistance(iX, iY, g_CenterX, g_CenterY);
 
 				local iDesertTop = china:GetHeight(100);										
