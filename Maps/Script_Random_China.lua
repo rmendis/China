@@ -521,9 +521,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 				end
 
 			-- Taklamakan & Gobi desert
-			elseif (lat < 0.48 and lon < 0.8) then
-				local iDistanceFromCenter = Map.GetPlotDistance(iX, iY, g_CenterX, g_CenterY);
-
+			elseif (lat < 0.48 and lat >= 0.33 and lon < 0.8) then
 				local iDesertTop = china:GetHeight(100);										
 				local iDesertBottom = china:GetHeight(55);
 
@@ -1042,13 +1040,11 @@ function GetLongitudeAtPlot(variationFrac, iX, iY)
 	local g_iW, g_iH = Map.GetGridSize();
 
 	-- china is 80 to 130 deg
-	-- Returns a longitude value between 0.0 and 1.0.
+	-- Returns a longitude value between -2 and +2 
 	local lon = 0.55 * (iX / g_iW) + 0.88;
 	
 	-- Adjust longitude using variation fractal, to roughen the border between bands:
 	lon = lon + (128 - variationFrac:GetHeight(iX, iY))/(255.0 * 5.0);
-	-- Limit to the range [0, 1]:
-	lon = math.clamp(lon, 0, 1);
 	
 	return lon;
 end
