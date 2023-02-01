@@ -887,6 +887,81 @@ function DoRiver(startPlot, thisFlowDirection, originalFlowDirection, riverID)
 end
 ------------------------------------------------------------------------------
 
+-- override: equator south of map
+function FeatureGenerator:AddJunglesAtPlot(plot, iX, iY)
+	--Jungle Check. First see if it can place the feature.
+	if(TerrainBuilder.CanHaveFeature(plot, g_FEATURE_JUNGLE)) then
+		if(math.ceil(self.iJungleCount * 100 / self.iNumLandPlots) <= self.iJungleMaxPercent) then
+			local iEquator = 0;
+			local iJungleTop = iEquator + math.ceil(self.iJungleMaxPercent * 0.5);
+
+			if(iY <= iJungleTop) then 
+				--Weight based on adjacent plots if it has more than 3 start subtracting
+				local iScore = 1000;
+				local iAdjacent = TerrainBuilder.GetAdjacentFeatureCount(plot, g_FEATURE_JUNGLE);
+
+				if(iAdjacent == 0 ) then
+					iScore = iScore;
+				elseif(iAdjacent == 1) then
+					iScore = iScore + 50;
+				elseif (iAdjacent == 2 or iAdjacent == 3) then
+					iScore = iScore + 150;
+				elseif (iAdjacent == 4) then
+					iScore = iScore - 50;
+				else
+					iScore = iScore - 200;
+				end
+
+				if(TerrainBuilder.GetRandomNumber(100, "Resource Placement Score Adjust") <= iScore) then
+					TerrainBuilder.SetFeatureType(plot, g_FEATURE_JUNGLE);
+					local terrainType = plot:GetTerrainType();
+
+					if(terrainType == g_TERRAIN_TYPE_PLAINS_HILLS or terrainType == g_TERRAIN_TYPE_GRASS_HILLS) then
+						TerrainBuilder.SetTerrainType(plot, g_TERRAIN_TYPE_PLAINS_HILLS);
+					else
+						TerrainBuilder.SetTerrainType(plot, g_TERRAIN_TYPE_PLAINS);
+					end
+
+					self.iJungleCount = self.iJungleCount + 1;
+					return true;
+				end
+			end
+		end
+	end
+
+	return false
+end
+
+-- override: northern forest bias
+function FeatureGenerator:AddForestsAtPlot(plot, iX, iY)
+	--Forest Check. First see if it can place the feature.
+	
+	if(TerrainBuilder.CanHaveFeature(plot, g_FEATURE_FOREST)) then
+		if(math.ceil(self.iForestCount * 100 / self.iNumLandPlots) <= self.iForestMaxPercent) then
+			--Weight based on adjacent plots if it has more than 3 start subtracting
+			local iScore = 3.5 * iY/g_iH * 100;
+			local iAdjacent = TerrainBuilder.GetAdjacentFeatureCount(plot, g_FEATURE_FOREST);
+
+			if(iAdjacent == 0 ) then
+				iScore = iScore;
+			elseif(iAdjacent == 1) then
+				iScore = iScore + 50;
+			elseif (iAdjacent == 2 or iAdjacent == 3) then
+				iScore = iScore + 150;
+			elseif (iAdjacent == 4) then
+				iScore = iScore - 50;
+			else
+				iScore = iScore - 200;
+			end
+				
+			if(TerrainBuilder.GetRandomNumber(300, "Resource Placement Score Adjust") <= iScore) then
+				TerrainBuilder.SetFeatureType(plot, g_FEATURE_FOREST);
+				self.iForestCount = self.iForestCount + 1;
+			end
+		end
+	end
+end
+
 ------------------------------------------------------------------------------
 -- China uses a custom feature generation. 20 - 50 deg.
 ------------------------------------------------------------------------------
@@ -914,7 +989,10 @@ end
 function AddFeatures()
 	print("Adding Features (Lua China) ...");
 
-	local args = {rainfall = 2}
+	-- Get Rainfall setting input by user.
+	local rainfall = MapConfiguration.GetValue("rainfall");
+	
+	local args = {rainfall = rainfall, iJunglePercent = 20, iMarshPercent = 11, iForestPercent = 44, iReefPercent = 10}	-- jungle & marsh max coverage
 	local featuregen = FeatureGenerator.Create(args);
 
 	featuregen:AddFeatures();
