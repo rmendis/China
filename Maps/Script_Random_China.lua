@@ -493,9 +493,6 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 
 			-- northern china
 			if (lat > 0.54) then
-				iTundraTop = china:GetHeight(45);
-				iTundraBottom = china:GetHeight(0);
-
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
 					terrainTypes[index] = g_TERRAIN_TYPE_SNOW_MOUNTAIN;
 
@@ -1054,6 +1051,9 @@ function GetLongitudeAtPlot(variationFrac, iX, iY)
 	
 	-- Adjust longitude using variation fractal, to roughen the border between bands:
 	lon = lon + (128 - variationFrac:GetHeight(iX, iY))/(255.0 * 5.0);
+
+	-- Limit to the range [-2, 2]:
+	lon = math.clamp(lon, -2, 2);
 	
 	return lon;
 end
