@@ -494,7 +494,7 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 				end
 
 			-- plains
-			elseif (lat <= 0.55 and lat > 0.44 and iY > g_CenterY) then					
+			elseif (lat <= 0.55 and lat > 0.48 and iY > g_CenterY) then					
 				local iTundraTop = china:GetHeight(100);
 				local iTundraBottom = china:GetHeight(95);
 								
