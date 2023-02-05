@@ -52,6 +52,8 @@ function GenerateMap()
 	plotTypes = GeneratePlotTypes(world_age);
 	terrainTypes = GenerateTerrainTypesChina(plotTypes, g_iW, g_iH, g_iFlags, false, temperature);
 
+	ApplyTerrain(plotTypes, terrainTypes);
+
 	for i = 0, (g_iW * g_iH) - 1, 1 do
 		pPlot = Map.GetPlotByIndex(i);
 		if (plotTypes[i] == g_PLOT_TYPE_HILLS) then
@@ -636,6 +638,17 @@ function GenerateTerrainTypesChina(plotTypes, iW, iH, iFlags, bNoCoastalMountain
 	end
 	
 	return terrainTypes; 
+end
+
+------------------------------------------------------------------------------
+function ApplyTerrain(plotTypes, terrainTypes)
+	for i = 0, (g_iW * g_iH) - 1, 1 do
+		pPlot = Map.GetPlotByIndex(i);
+		if (plotTypes[i] == g_PLOT_TYPE_HILLS) then
+			terrainTypes[i] = terrainTypes[i] + 1;
+		end
+		TerrainBuilder.SetTerrainType(pPlot, terrainTypes[i]);
+	end
 end
 
 ------------------------------------------------------------------------------
