@@ -451,7 +451,7 @@ function InitFractal(args)
 	--
 	local MapSizeTypes = {};
 	for row in GameInfo.Maps() do
-		MapSizeTypes[row.MapSizeType] = row.PlateValue;
+		MapSizeTypes[row.MapSizeType] = row.PlateValue - 1;
 	end
 	local sizekey = Map.GetMapSize();
 
