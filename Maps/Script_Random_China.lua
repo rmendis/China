@@ -124,7 +124,7 @@ end
 ------------------------------------------------------------------------------
 -- China uses custom plot generation with regional specificity.
 ------------------------------------------------------------------------------
-function GeneratePlotTypes()
+function GeneratePlotTypes(world_age)
 	print("Setting Plot Types (Lua China) ...");
 	local iW, iH = Map.GetGridSize();
 	-- Initiate plot table, fill all data slots with type PLOT_LAND
